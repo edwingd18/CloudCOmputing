@@ -1,0 +1,20 @@
+{
+  "datacenter": "dc1",
+  "data_dir": "/opt/consul",
+  "log_level": "INFO",
+  "node_name": "consul-server",
+  "bind_addr": "192.168.50.4",
+  "client_addr": "0.0.0.0",
+  "retry_join": ["192.168.50.4"],
+  "server": true,
+  "bootstrap": true,
+  "ui_config": {
+    "enabled": true
+  },
+  "connect": {
+    "enabled": true
+  },
+  "ports": {
+    "grpc": 8502
+  }
+}
