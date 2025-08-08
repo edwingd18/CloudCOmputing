@@ -1,24 +1,30 @@
-# To Run application
+Run Application
+================
 
-## Start and SSH into Vagrant VM 
+1. Start and SSH into the Vagrant VM
+------------------------------------
 
-```
+```bash
 vagrant up
 vagrant ssh servidorWeb
 ```
 
-## Run the webApp
+2. Start the microservices and frontend
+---------------------------------------
+
+```bash
+./iniciar_microservicios.sh
+```
+
+3. Access Consul UI
+-------------------
+
+Open the following URL in your browser:
 
 ```
-cd /home/vagrant/frontend
-export FLASK_APP=run.py
-/usr/local/bin/flask run --host=0.0.0.0 --port 5001
+http://192.168.50.4:8500
 ```
 
-## Run the Users Microservice
 
-```
-cd /home/vagrant/microUsers
-export FLASK_APP=run.py
-/usr/local/bin/flask run --host=0.0.0.0 --port 5002
-```
+
+
