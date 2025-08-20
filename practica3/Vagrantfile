@@ -1,0 +1,32 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  if Vagrant.has_plugin? "vagrant-vbguest"
+    config.vbguest.no_install  = true
+    config.vbguest.auto_update = false
+    config.vbguest.no_remote   = true
+  end
+
+  config.vm.define :clienteUbuntu do |clienteUbuntu|
+    clienteUbuntu.vm.box = "bento/ubuntu-22.04"
+    clienteUbuntu.vm.network :private_network, ip: "192.168.50.2"
+    clienteUbuntu.vm.provision "shell", path: "script.sh"
+    clienteUbuntu.vm.provision "shell", path: "iniciardh.sh"
+    clienteUbuntu.vm.hostname = "clienteUbuntu"
+  end
+
+  config.vm.define :servidorUbuntu do |servidorUbuntu|
+    servidorUbuntu.vm.box = "bento/ubuntu-22.04"
+    servidorUbuntu.vm.network :private_network, ip: "192.168.50.3"
+    servidorUbuntu.vm.provision "shell", path: "script.sh"
+    servidorUbuntu.vm.provision "shell", path: "iniciard3.sh"
+    servidorUbuntu.vm.provision "file", source: "test_docker1", destination: "/home/vagrant/test_docker1"
+    servidorUbuntu.vm.provision "shell", path: "iniciard1.sh"
+    servidorUbuntu.vm.provision "file" ,source: "test_docker2", destination: "/home/vagrant/test_docker2"
+    servidorUbuntu.vm.provision "shell", path: "iniciard2.sh"
+    servidorUbuntu.vm.hostname = "servidorUbuntu"
+  end
+
+end
