@@ -1,6 +1,3 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
-
 Vagrant.configure("2") do |config|
 
   if Vagrant.has_plugin? "vagrant-vbguest"
@@ -15,6 +12,10 @@ Vagrant.configure("2") do |config|
     clienteUbuntu.vm.provision "shell", path: "script.sh"
     clienteUbuntu.vm.provision "shell", path: "iniciardh.sh"
     clienteUbuntu.vm.hostname = "clienteUbuntu"
+    clienteUbuntu.vm.provider "virtualbox" do |vb|
+      vb.memory = 1024   # RAM en MB (1GB)
+      vb.cpus   = 1      # Núcleos de CPU
+    end
   end
 
   config.vm.define :servidorUbuntu do |servidorUbuntu|
@@ -25,8 +26,14 @@ Vagrant.configure("2") do |config|
     servidorUbuntu.vm.provision "file", source: "test_docker1", destination: "/home/vagrant/test_docker1"
     servidorUbuntu.vm.provision "shell", path: "iniciard1.sh"
     servidorUbuntu.vm.provision "file" ,source: "test_docker2", destination: "/home/vagrant/test_docker2"
+    servidorUbuntu.vm.provision "file", source: "vol_docker", destination:"/home/vagrant/vol_docker"
     servidorUbuntu.vm.provision "shell", path: "iniciard2.sh"
     servidorUbuntu.vm.hostname = "servidorUbuntu"
+    servidorUbuntu.vm.provider "virtualbox" do |vb|
+      vb.memory = 2048   # RAM en MB (2GB)
+      vb.cpus   = 2      # Núcleos de CPU
+    end
   end
 
 end
+
