@@ -1,0 +1,92 @@
+services:
+  db-users:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: usersdb
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    volumes:
+      - users-db-data:/var/lib/mysql
+      - ./init_users.sql:/docker-entrypoint-initdb.d/1-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  users:
+    build: ./microUsers
+    environment:
+      FLASK_APP: run.py
+      FLASK_RUN_HOST: 0.0.0.0
+      FLASK_RUN_PORT: 5002
+      DB_HOST: db-users
+      DB_PORT: 3306
+      DB_NAME: usersdb
+      DB_USER: app
+      DB_PASSWORD: app
+    depends_on:
+      db-users:
+        condition: service_healthy
+    ports:
+      - "5002:5002"
+    restart: unless-stopped
+
+  db-products:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: productsdb
+      MYSQL_USER: app
+      MYSQL_PASSWORD: app
+    volumes:
+      - products-db-data:/var/lib/mysql
+      - ./init_products.sql:/docker-entrypoint-initdb.d/1-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
+  products:
+    build: ./microProducts
+    environment:
+      FLASK_APP: run.py
+      FLASK_RUN_HOST: 0.0.0.0
+      FLASK_RUN_PORT: 5003
+      DB_HOST: db-products
+      DB_PORT: 3306
+      DB_NAME: productsdb
+      DB_USER: app
+      DB_PASSWORD: app
+    depends_on:
+      db-products:
+        condition: service_healthy
+    ports:
+      - "5003:5003"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    environment:
+      FLASK_APP: run.py
+      FLASK_RUN_HOST: 0.0.0.0
+      FLASK_RUN_PORT: 5001
+      USERS_BASE_URL: http://users:5002
+      PRODUCTS_BASE_URL: http://products:5003
+    depends_on:
+      - users
+      - products
+    ports:
+      - "5001:5001"
+    restart: unless-stopped
+
+volumes:
+  users-db-data:
+  products-db-data:
+
