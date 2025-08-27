@@ -1,10 +1,25 @@
 services:
+  consul:
+    image: hashicorp/consul:1.17
+    container_name: consul
+    command: ["agent","-server","-bootstrap","-ui","-client=0.0.0.0"]
+    ports:
+      - "8500:8500"         # UI/API
+      - "8600:8600/tcp"     # DNS TCP (opcional)
+      - "8600:8600/udp"     # DNS UDP (opcional)
+    healthcheck:
+      test: ["CMD", "consul", "info"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
   db-users:
     image: mysql:8.0
     container_name: db-users
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_ROOT_HOST: "%" 
+      MYSQL_ROOT_HOST: "%"
       MYSQL_DATABASE: myflaskapp_users
     volumes:
       - users_db_data:/var/lib/mysql
@@ -14,6 +29,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+    restart: unless-stopped
 
   db-products:
     image: mysql:8.0
@@ -21,8 +37,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: myflaskapp_products
-      MYSQL_ROOT_HOST: "%" 
-
+      MYSQL_ROOT_HOST: "%"
     volumes:
       - products_db_data:/var/lib/mysql
       - ./microProducts/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
@@ -31,40 +46,66 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+    restart: unless-stopped
 
   microusers:
     build: ./microUsers
     environment:
-      USE_CONSUL: "0"
+      # --- Consul ---
+      USE_CONSUL: "1"
+      CONSUL_HOST: consul
+      SERVICE_NAME: microusers
+      SERVICE_PORT: "5002"
+      SERVICE_ADDRESS: microusers
+      # --- DB ---
       MYSQL_HOST: db-users
       MYSQL_PORT: "3306"
       MYSQL_USER: root
       MYSQL_PASSWORD: root
       MYSQL_DB: myflaskapp_users
+      # --- App ---
+      INIT_DB: "1"   # para usar tu init_db_with_retry()
     depends_on:
       db-users:
         condition: service_healthy
+      consul:
+        condition: service_healthy
     ports:
       - "5002:5002"
+    restart: unless-stopped
 
   microproducts:
     build: ./microProducts
     environment:
-      USE_CONSUL: "0"
+      # --- Consul ---
+      USE_CONSUL: "1"
+      CONSUL_HOST: consul
+      SERVICE_NAME: microproducts
+      SERVICE_PORT: "5003"
+      SERVICE_ADDRESS: microproducts
+      # --- DB ---
       MYSQL_HOST: db-products
       MYSQL_PORT: "3306"
       MYSQL_USER: root
       MYSQL_PASSWORD: root
       MYSQL_DB: myflaskapp_products
+      # --- App --.-
+      INIT_DB: "1"
     depends_on:
       db-products:
         condition: service_healthy
+      consul:
+        condition: service_healthy
     ports:
       - "5003:5003"
+    restart: unless-stopped
 
   frontend:
     build: ./frontend
     environment:
+      USE_CONSUL: "1"
+      CONSUL_HOST: consul
+      # Fallbacks si Consul no responde:
       USERS_API_URL: http://microusers:5002
       PRODUCTS_API_URL: http://microproducts:5003
     depends_on:
@@ -72,9 +113,13 @@ services:
         condition: service_started
       microproducts:
         condition: service_started
+      consul:
+        condition: service_healthy
     ports:
       - "5001:5001"
+    restart: unless-stopped
 
 volumes:
   users_db_data:
   products_db_data:
+
