@@ -1,5 +1,3 @@
-
-CREATE DATABASE myflaskapp_products;
 use myflaskapp_products;
 
 
