@@ -1,0 +1,75 @@
+services:
+  consul-server:
+    image: hashicorp/consul:1.18
+    container_name: consul-server
+    command: [
+      "agent",
+      "-server",
+      "-node=consul-server",
+      "-bootstrap-expect=1",
+      "-client=0.0.0.0",
+      "-ui",
+      "-data-dir=/consul/data",
+      "-log-level=INFO"
+    ]
+    volumes:
+      - consul-server-data:/consul/data
+    ports:
+      - "8500:8500"        # UI y API HTTP
+      - "8300:8300"        # RPC del servidor
+      - "8301:8301"        # LAN serf (TCP)
+      - "8301:8301/udp"    # LAN serf (UDP)
+      - "8302:8302"        # WAN serf (TCP) - opcional
+      - "8302:8302/udp"    # WAN serf (UDP) - opcional
+      - "8600:8600"        # DNS (TCP)
+      - "8600:8600/udp"    # DNS (UDP)
+    healthcheck:
+      test: ["CMD", "consul", "info"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - consulnet
+
+  consul-client:
+    image: hashicorp/consul:1.18
+    container_name: consul-client
+    depends_on:
+      consul-server:
+        condition: service_healthy
+    command: [
+      "agent",
+      "-node=consul-client",
+      "-retry-join=consul-server",
+      "-client=0.0.0.0",
+      "-data-dir=/consul/data",
+      "-config-dir=/consul/config",
+      "-log-level=INFO"
+    ]
+    volumes:
+      - consul-client-data:/consul/data
+      - ./consul/client:/consul/config:ro  # aquí montas echo.json (registro del servicio)
+    healthcheck:
+      test: ["CMD", "consul", "info"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      - consulnet
+
+  http-echo:
+    image: hashicorp/http-echo:0.2.3
+    container_name: http-echo
+    command: ["-text=hello from echo service"]
+    ports:
+      - "5678:5678"  # expuesto al host para curl http://localhost:5678
+    networks:
+      - consulnet
+
+networks:
+  consulnet:
+
+volumes:
+  consul-server-data:
+  consul-client-data:
+

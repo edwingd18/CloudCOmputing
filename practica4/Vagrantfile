@@ -1,0 +1,36 @@
+Vagrant.configure("2") do |config|
+
+  if Vagrant.has_plugin? "vagrant-vbguest"
+    config.vbguest.no_install  = true
+    config.vbguest.auto_update = false
+    config.vbguest.no_remote   = true
+  end
+
+  config.vm.define :clienteUbuntu do |clienteUbuntu|
+    clienteUbuntu.vm.box = "bento/ubuntu-22.04"
+    clienteUbuntu.vm.network :private_network, ip: "192.168.50.2"
+    clienteUbuntu.vm.provision "shell", path:"instalarFTP.sh"
+    clienteUbuntu.vm.hostname = "clienteUbuntu"
+    clienteUbuntu.vm.provider "virtualbox" do |vb|
+      vb.memory = 1024   # RAM en MB (1GB)
+      vb.cpus   = 1      # Núcleos de CPU
+    end
+  end
+
+  config.vm.define :servidorUbuntu do |servidorUbuntu|
+    servidorUbuntu.vm.box = "bento/ubuntu-22.04"
+    servidorUbuntu.vm.network :private_network, ip: "192.168.50.3"
+    servidorUbuntu.vm.provision "shell", path: "script.sh"
+    servidorUbuntu.vm.provision "shell", path: "iniciar_api_dockerizada.sh"
+    servidorUbuntu.vm.provision "file",source:"vimrc",destination:"/home/vagrant/.vimrc"
+    servidorUbuntu.vm.provision "file", source:"dockerFTP", destination:"/home/vagrant/dockerFTP"
+    servidorUbuntu.vm.provision "file", source:"dockerFTP", destination:"/home/vagrant/dockerConsul"
+    servidorUbuntu.vm.hostname = "servidorUbuntu"
+    servidorUbuntu.vm.provider "virtualbox" do |vb|
+      vb.memory = 2048   # RAM en MB (2GB)
+      vb.cpus   = 2      # Núcleos de CPU
+    end
+  end
+
+end
+

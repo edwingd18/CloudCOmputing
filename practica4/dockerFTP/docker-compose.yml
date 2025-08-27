@@ -1,0 +1,14 @@
+services:
+  vsftpd:
+    image: fauria/vsftpd
+    environment:
+      - FTP_USER=edwin
+      - FTP_PASS=edwin
+      - PASV_ADDRESS=192.168.50.3   
+      - PASV_MIN_PORT=21100
+      - PASV_MAX_PORT=21110
+    volumes:
+      - /home/vagrant/xd:/home/vsftpd
+    network_mode: host
+    restart: unless-stopped
+

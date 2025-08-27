@@ -1,0 +1,18 @@
+{
+  "service": {
+    "name": "echo",
+    "id": "echo-1",
+    "address": "http-echo",
+    "port": 5678,
+    "checks": [
+      {
+        "id": "echo-http",
+        "name": "HTTP on :5678",
+        "http": "http://http-echo:5678",
+        "interval": "10s",
+        "timeout": "1s"
+      }
+    ]
+  }
+}
+
