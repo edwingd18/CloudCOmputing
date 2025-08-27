@@ -1,24 +1,77 @@
-version: "3.9"
-
 services:
-  frontend:
-    build: ./frontend
-    container_name: frontend
-    ports:
-      - "5001:5001"
-    # El frontend sirve HTML/JS; los JS llaman a 192.168.50.4:5002/5003 como en tu código
+  db-users:
+    image: mysql:8.0
+    container_name: db-users
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: myflaskapp_users
+    volumes:
+      - users_db_data:/var/lib/mysql
+      - ./microUsers/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -proot --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  db-products:
+    image: mysql:8.0
+    container_name: db-products
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: myflaskapp_products
+    volumes:
+      - products_db_data:/var/lib/mysql
+      - ./microProducts/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -proot --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   microusers:
     build: ./microUsers
-    container_name: microusers
+    environment:
+      USE_CONSUL: "0"
+      MYSQL_HOST: db-users
+      MYSQL_PORT: "3306"
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DB: myflaskapp_users
+    depends_on:
+      db-users:
+        condition: service_healthy
     ports:
       - "5002:5002"
-    # Corre su propio MariaDB interno accesible como localhost para la app (sin cambios de código)
 
   microproducts:
     build: ./microProducts
-    container_name: microproducts
+    environment:
+      USE_CONSUL: "0"
+      MYSQL_HOST: db-products
+      MYSQL_PORT: "3306"
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DB: myflaskapp_products
+    depends_on:
+      db-products:
+        condition: service_healthy
     ports:
       - "5003:5003"
-    # Igual que microusers: DB local interna
 
+  frontend:
+    build: ./frontend
+    environment:
+      USERS_API_URL: http://microusers:5002
+      PRODUCTS_API_URL: http://microproducts:5003
+    depends_on:
+      microusers:
+        condition: service_started
+      microproducts:
+        condition: service_started
+    ports:
+      - "5001:5001"
+
+volumes:
+  users_db_data:
+  products_db_data:

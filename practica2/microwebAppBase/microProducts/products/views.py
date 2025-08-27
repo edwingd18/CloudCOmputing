@@ -1,38 +1,34 @@
-from flask import Flask, render_template
-from products.controllers.product_controller import product_controller
-from db.db import db
-from flask_cors import CORS
-from flask_consulate import Consul
+import os
+from flask import Flask, jsonify, request
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-CORS(app)
 app.config.from_object('config.Config')
-db.init_app(app)
+db = SQLAlchemy(app)
 
-# Healthcheck endpoint for Consul
-@app.route('/healthcheck')
-def health_check():
-    """
-    Health check endpoint for Consul monitoring
-    """
-    try:
-        # Simple health check - could include DB connectivity, etc.
-        return {'status': 'healthy', 'service': 'microProducts'}, 200
-    except Exception as e:
-        return {'status': 'unhealthy', 'error': str(e)}, 500
+class Product(db.Model):
+    __tablename__ = 'products'
+    id    = db.Column(db.Integer, primary_key=True)
+    name  = db.Column(db.String(255))
+    price = db.Column(db.Float)
 
-# Consul service discovery
-consul = Consul(app=app)
-consul.register_service(
-    name='microProducts',
-    interval='10s',
-    tags=['microservice', 'products', 'api'],
-    port=5003,
-    httpcheck='http://192.168.50.4:5003/healthcheck'
-)
+@app.get("/health")
+def health():
+    return "ok", 200
 
-# Registrando el blueprint del controlador de productos
-app.register_blueprint(product_controller)
 
-if __name__ == '__main__':
-    app.run()
+@app.get("/api/products")
+def list_products():
+    rows = Product.query.all()
+    return jsonify([{"id":p.id, "name":p.name, "price":p.price} for p in rows]), 200
+
+@app.post("/api/products")
+def create_product():
+    data = request.get_json(force=True)
+    p = Product(name=data.get("name"), price=data.get("price"))
+    db.session.add(p)
+    db.session.commit()
+    return jsonify({"id": p.id}), 201
+
+with app.app_context():
+    db.create_all()
