@@ -23,8 +23,11 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: root
       MYSQL_DB: myflaskapp
+      CONSUL_HOST: consul
+      SERVICE_ADDRESS: 192.168.80.3
     depends_on:
       - db
+      - consul
 
   products:
     build:
@@ -38,8 +41,11 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: root
       MYSQL_DB: myflaskapp
+      CONSUL_HOST: consul
+      SERVICE_ADDRESS: 192.168.80.3
     depends_on:
       - db
+      - consul
 
   orders:
     build:
@@ -53,8 +59,11 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: root
       MYSQL_DB: myflaskapp
+      CONSUL_HOST: consul
+      SERVICE_ADDRESS: 192.168.80.3
     depends_on:
       - db
+      - consul
 
   frontend:
     build:
@@ -66,7 +75,16 @@ services:
     depends_on:
       - users
       - products
-      - orders
+
+  consul:
+    image: hashicorp/consul:1.15
+    restart: always
+    ports:
+      - "8500:8500"
+    volumes:
+      - consul_data:/consul/data
+    command: ["consul", "agent", "-server", "-bootstrap-expect=1", "-ui", "-bind=0.0.0.0", "-client=0.0.0.0", "-data-dir=/consul/data"]
 
 volumes:
   db_data:
+  consul_data:

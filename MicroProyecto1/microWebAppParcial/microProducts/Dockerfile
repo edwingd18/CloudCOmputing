@@ -15,5 +15,4 @@ COPY microProducts/ .
 EXPOSE 5003
 
 # Define the command to run the app
-ENV FLASK_APP=run.py
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5003"]
+CMD ["python", "run.py"]

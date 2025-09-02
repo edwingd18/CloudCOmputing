@@ -15,5 +15,4 @@ COPY microUsers/ .
 EXPOSE 5002
 
 # Define the command to run the app
-ENV FLASK_APP=run.py
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5002"]
+CMD ["python", "run.py"]
