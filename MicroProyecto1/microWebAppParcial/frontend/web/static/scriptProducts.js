@@ -29,6 +29,11 @@ function getProducts() {
                 nameCell.textContent = product.name;
                 row.appendChild(nameCell);
 
+                // Description
+                var descriptionCell = document.createElement('td');
+                descriptionCell.textContent = product.description;
+                row.appendChild(descriptionCell);
+
                 // Price
                 var priceCell = document.createElement('td');
                 priceCell.textContent = product.price;
@@ -77,6 +82,7 @@ function getProducts() {
 function createProduct() {
     var data = {
         name: document.getElementById('name').value,
+        description: document.getElementById('description').value,
         price: document.getElementById('price').value,
         stock: document.getElementById('stock').value
     };
@@ -112,6 +118,7 @@ function updateProduct() {
     var productId = document.getElementById('product-id').value;
     var data = {
         name: document.getElementById('name').value,
+        description: document.getElementById('description').value,
         price: document.getElementById('price').value,
         stock: document.getElementById('stock').value
     };
