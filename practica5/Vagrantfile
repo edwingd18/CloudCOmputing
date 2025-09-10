@@ -1,0 +1,33 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure("2") do |config|
+  if Vagrant.has_plugin? "vagrant-vbguest"
+    config.vbguest.no_install  = true
+    config.vbguest.auto_update = false
+    config.vbguest.no_remote   = true
+  end
+
+  config.vm.define :servidorUbuntu do |srv|
+    srv.vm.box      = "bento/ubuntu-22.04"
+    srv.vm.hostname = "servidorUbuntu"
+    
+    # Configuración de VirtualBox
+    srv.vm.provider "virtualbox" do |vb|
+      vb.memory = 2048
+      vb.cpus = 2
+    end
+
+    # Red host-only (ajústala si tu VirtualBox tiene otros rangos permitidos)
+    srv.vm.network :private_network, ip: "192.168.100.3"
+
+    # (Opcional pero útil) Port-forward para acceder también por localhost del host
+    srv.vm.network :forwarded_port, guest: 8888, host: 8888, auto_correct: true # Jupyter
+    srv.vm.network :forwarded_port, guest: 8080, host: 8080, auto_correct: true # Nginx en contenedor LXD
+
+    # Provisioners
+    srv.vm.provision "shell", path: "script.sh"                # tu vsftpd y sysctl
+    srv.vm.provision "shell", path: "script_jupyter_final.sh"  # Jupyter que SÍ funciona
+    srv.vm.provision "shell", path: "script_lxd_web.sh"        # LXD + web (corregido)
+  end
+end
+

@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "[DNS] Restaurando systemd-resolved y configurando DNS"
+export DEBIAN_FRONTEND=noninteractive
+sudo apt-get update -y
+sudo apt-get install -y systemd-resolved
+
+sudo systemctl enable --now systemd-resolved
+
+# Restaura el symlink correcto
+sudo rm -f /etc/resolv.conf
+sudo ln -s /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
+
+# DNS soportado por systemd-resolved (Cloudflare + Google)
+sudo mkdir -p /etc/systemd/resolved.conf.d
+sudo tee /etc/systemd/resolved.conf.d/dns.conf >/dev/null <<EOF
+[Resolve]
+DNS=1.1.1.1 8.8.8.8
+FallbackDNS=1.0.0.1 8.8.4.4
+DNSStubListener=yes
+EOF
+sudo systemctl restart systemd-resolved
+
+echo "[FTP] Instalando y configurando vsftpd"
+sudo apt-get install -y vsftpd
+
+# Configuración básica segura e idempotente
+sudo sed -i -E 's/^#?write_enable=.*/write_enable=YES/' /etc/vsftpd.conf
+sudo sed -i -E 's/^#?local_enable=.*/local_enable=YES/' /etc/vsftpd.conf
+sudo sed -i -E 's/^#?chroot_local_user=.*/chroot_local_user=YES/' /etc/vsftpd.conf
+
+# Activa servicio
+sudo systemctl enable --now vsftpd
+
+echo "=== FTP OK ==="
+echo "Usuario: vagrant (password por defecto: vagrant)"
+echo "Conéctate con FileZilla -> Host: 192.168.100.3  | Protocolo: FTP | Puerto: 21 | Cifrado: Only use plain FTP"
+
