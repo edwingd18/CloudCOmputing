@@ -1,0 +1,81 @@
+HTTP/1.0 503 Service Unavailable
+Cache-Control: no-cache
+Connection: close
+Content-Type: text/html
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicio No Disponible</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: white;
+        }
+        .error-container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            max-width: 500px;
+        }
+        .error-code {
+            font-size: 5em;
+            font-weight: bold;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .error-message {
+            font-size: 1.5em;
+            margin: 20px 0;
+        }
+        .error-description {
+            font-size: 1em;
+            margin: 20px 0;
+            opacity: 0.9;
+        }
+        .maintenance-icon {
+            font-size: 3em;
+            margin: 20px 0;
+        }
+        .retry-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="maintenance-icon">🔧</div>
+        <h1 class="error-code">503</h1>
+        <h2 class="error-message">Servicio Temporalmente No Disponible</h2>
+        <p class="error-description">
+            Lo sentimos, nuestros servidores web están temporalmente fuera de servicio. 
+            Esto puede deberse a mantenimiento programado o una interrupción técnica.
+        </p>
+        <div class="retry-info">
+            <strong>¿Qué puedes hacer?</strong><br>
+            • Esperar unos minutos e intentar nuevamente<br>
+            • Contactar al administrador del sistema<br>
+            • Verificar el estado del servicio más tarde
+        </div>
+        <p style="margin-top: 30px; font-size: 0.9em; opacity: 0.7;">
+            Error generado por HAProxy - Práctica de Cloud Computing
+        </p>
+    </div>
+</body>
+</html>

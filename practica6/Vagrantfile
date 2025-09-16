@@ -1,0 +1,41 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure("2") do |config|
+
+  # Configuración global
+  config.vm.boot_timeout = 600
+  config.vm.synced_folder ".", "/vagrant", disabled: false
+
+  config.vm.define :clienteUbuntu do |clienteUbuntu|
+    clienteUbuntu.vm.box = "ubuntu/jammy64"
+    clienteUbuntu.vm.network :private_network, ip: "192.168.100.2"
+    clienteUbuntu.vm.hostname = "clienteUbuntu"
+    
+    clienteUbuntu.vm.provision "shell", path: "provision_docker.sh"
+    
+    clienteUbuntu.vm.provider "virtualbox" do |vb|
+      vb.memory = 512
+      vb.cpus = 1
+      vb.gui = false
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    end
+  end
+
+  config.vm.define :servidorUbuntu do |servidorUbuntu|
+    servidorUbuntu.vm.box = "ubuntu/jammy64"
+    servidorUbuntu.vm.network :private_network, ip: "192.168.100.3"
+    servidorUbuntu.vm.hostname = "servidorUbuntu"
+    
+    servidorUbuntu.vm.provision "shell", path: "provision_docker.sh"
+    servidorUbuntu.vm.provision "shell", path: "provision_git.sh"
+    
+    servidorUbuntu.vm.provider "virtualbox" do |vb|
+      vb.memory = 512
+      vb.cpus = 1
+      vb.gui = false
+      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      vb.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+    end
+  end
+end
