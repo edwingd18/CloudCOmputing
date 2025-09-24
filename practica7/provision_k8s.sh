@@ -7,6 +7,9 @@ echo "=== Iniciando aprovisionamiento de Minikube ==="
 # Actualizar paquetes
 sudo apt-get update -y
 
+# Instalar conntrack necesario para Minikube
+sudo apt-get install -y conntrack
+
 # Instalar minikube
 
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64

@@ -1,0 +1,5 @@
+FROM node:18-alpine
+WORKDIR /app
+COPY server-v1.js .
+EXPOSE 8080
+CMD ["node", "server-v1.js"]
