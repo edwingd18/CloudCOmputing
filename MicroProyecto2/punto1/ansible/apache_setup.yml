@@ -1,0 +1,64 @@
+---
+- name: Instalar y configurar Apache en VM2
+  hosts: webservers
+  become: yes
+  
+  tasks:
+    - name: Actualizar cache de apt
+      apt:
+        update_cache: yes
+      
+    - name: Instalar Apache2
+      apt:
+        name: apache2
+        state: present
+        
+    - name: Asegurar que Apache está iniciado y habilitado
+      systemd:
+        name: apache2
+        state: started
+        enabled: yes
+        
+    - name: Crear página personalizada
+      copy:
+        content: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>VM2 - Configurada con Ansible</title>
+              <style>
+                  body {
+                      font-family: Arial, sans-serif;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white;
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      height: 100vh;
+                      margin: 0;
+                  }
+                  .container {
+                      text-align: center;
+                      background: rgba(255,255,255,0.1);
+                      padding: 40px;
+                      border-radius: 10px;
+                      backdrop-filter: blur(10px);
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>VM2 - Configurada con Ansible desde VM1</h1>
+                  <p>Apache instalado y configurado exitosamente</p>
+                  <p>IP: 192.168.50.20</p>
+                  <p>Provisionado automáticamente</p>
+              </div>
+          </body>
+          </html>
+        dest: /var/www/html/index.html
+        mode: '0644'
+        
+    - name: Reiniciar Apache
+      systemd:
+        name: apache2
+        state: restarted
